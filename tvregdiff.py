@@ -217,20 +217,21 @@ def TVRegDiff(data, itern, alph, u0=None, scale='small', ep=1e-6, dx=None,
             g = AT(A(u)) + ATb + alph * L * u
 
             # Prepare to solve linear equation.
-            tol = 1e-4
-            maxit = 100
+            tol = 1e-6
+            maxit = 400
             # Simple preconditioner.
             P = alph * sparse.spdiags(L.diagonal() + 1, 0, n + 1, n + 1)
 
             def linop(v): return (alph * L * v + AT(A(v)))
             linop = splin.LinearOperator((n + 1, n + 1), linop)
-
+            P = None
             if diagflag:
                 [s, info_i] = sparse.linalg.cg(
                     linop, g, x0=None, tol=tol, maxiter=maxit, callback=None,
                     M=P, atol='legacy')
                 log_iteration(ii, s[0], u, g)
                 if (info_i > 0):
+                    print(ii)
                     logging.warning(
                         "WARNING - convergence to tolerance not achieved!")
                 elif (info_i < 0):
@@ -285,8 +286,8 @@ def TVRegDiff(data, itern, alph, u0=None, scale='small', ep=1e-6, dx=None,
             # droptol = 1.0e-2
             R = sparse.dia_matrix(np.linalg.cholesky(B.todense()))
             # Prepare to solve linear equation.
-            tol = 1.0e-4
-            maxit = 100
+            tol = 1.0e-6
+            maxit = 200
 
             def linop(v): return (alph * L * v + AT(A(v)))
             linop = splin.LinearOperator((n, n), linop)
@@ -297,6 +298,7 @@ def TVRegDiff(data, itern, alph, u0=None, scale='small', ep=1e-6, dx=None,
                     M=np.dot(R.transpose(), R), atol='legacy')
                 log_iteration(ii, s[0], u, g)
                 if (info_i > 0):
+                    print(ii)
                     logging.warning(
                         "WARNING - convergence to tolerance not achieved!")
                 elif (info_i < 0):
@@ -310,6 +312,7 @@ def TVRegDiff(data, itern, alph, u0=None, scale='small', ep=1e-6, dx=None,
             u = u + s
             # Display plot
             if plotflag:
+                plt.close('all')
                 plt.plot(u / dx)
                 plt.show()
 
